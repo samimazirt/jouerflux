@@ -1,0 +1,13 @@
+Flask
+flask_sqlalchemy
+flask_swagger_ui
+flask_migrate
+config
+flask-login
+flask-restx
+flask-accepts==0.17.4
+flask-marshmallow==1.2.1
+marshmallow==3.21.3
+marshmallow-sqlalchemy==1.0.0
+setuptools
+psycopg2
