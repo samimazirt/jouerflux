@@ -21,7 +21,8 @@ def create_rule(data, rule_schema):
         logger.error("Policy not found")
         return {"message": "Policy not found"}, 404
 
-    new_rule = RuleModel(name=validated_data['name'], policy_id=validated_data['policy_id'])
+    new_rule = RuleModel(name=validated_data['name'], policy_id=validated_data['policy_id'], source_ip=validated_data['source_ip'],
+        destination_ip=validated_data['destination_ip'],action=validated_data['action'])
     db.session.add(new_rule)
     db.session.commit()
     return new_rule, None
