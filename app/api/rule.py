@@ -6,6 +6,7 @@ from app.models.rule import RuleModel
 from app.app import db
 from app.schemas.rule import RuleSchema
 from marshmallow import ValidationError
+from app.core.rule_service import create_rule
 
 ns_rule = Namespace('rule', description='Rule operations')
 
@@ -40,17 +41,10 @@ class RuleList(Resource):
     @admin_required
     def post(self):
         data = request.json
-
-        try:
-            validated_data = rule_schema.load(data)
-        except ValidationError as err:
-            return {"message": "Validation error", "errors": err.messages}, 400
-
-        new_rule = RuleModel(name=validated_data['name'], policy_id=validated_data['policy_id'])
-        
-        db.session.add(new_rule)
-        db.session.commit()
-        return rule_schema.dump(new_rule), 201
+        res, error = create_rule(data, rule_schema)
+        if error:
+            return res, 400
+        return rule_schema.dump(res), 201
 
 
     @ns_rule.marshal_list_with(rule_model, envelope='rules')

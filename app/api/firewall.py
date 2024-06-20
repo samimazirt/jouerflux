@@ -6,6 +6,7 @@ from app.app import db
 from app.models.firewall import FirewallModel
 from app.schemas.firewall import FirewallSchema
 from marshmallow import ValidationError
+from app.core.firewall_service import create_firewall
 
 ns_fw = Namespace('firewalls', description='Firewall related operations')
 
@@ -53,9 +54,9 @@ class FirewallList(Resource):
         except ValidationError as err:
             return {"message": "Validation error", "errors": err.messages}, 400
 
-        new_firewall = FirewallModel(name=validated_data['name'])
-        db.session.add(new_firewall)
-        db.session.commit()
+        new_firewall, errors = create_firewall(validated_data)
+        if errors:
+            return errors, 400
         return firewall_schema.dump(new_firewall), 201
 
 @ns_fw.route('/<int:id>')
