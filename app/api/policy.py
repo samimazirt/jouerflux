@@ -6,6 +6,7 @@ from app.models.policy import PolicyModel
 from app.app import db
 from app.schemas.policy import PolicySchema
 from marshmallow import ValidationError
+from app.core.policy_service import create_policy
 
 ns_policy = Namespace('policy', description='Policy operations')
 
@@ -39,16 +40,10 @@ class PolicyList(Resource):
     @admin_required
     def post(self):
         data = request.json
-
-        try:
-            validated_data = policy_schema.load(data)
-        except ValidationError as err:
-            return {"message": "Validation error", "errors": err.messages}, 400
-
-        new_policy = PolicyModel(name=validated_data['name'], firewall_id=validated_data['firewall_id'])
-        db.session.add(new_policy)
-        db.session.commit()
-        return policy_schema.dump(new_policy), 201
+        res, error = create_policy(data, policy_schema)
+        if error:
+            return res, 400
+        return policy_schema.dump(res), 201
 
 
     @ns_policy.marshal_list_with(policy_model, envelope='policies')
