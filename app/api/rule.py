@@ -17,12 +17,18 @@ ns_rule = Namespace('rule', description='Rule operations')
 rule_model = ns_rule.model('Rule', {
     'id': fields.Integer(readOnly=True, description='The unique identifier of a rule'),
     'name': fields.String(required=True, description='The rule name'),
-    'policy_id': fields.Integer(required=True, description='The policy ID')
+    'policy_id': fields.Integer(required=True, description='The policy ID'),
+    'source_ip': fields.String(required=True, description='Source IP address'),
+    'destination_ip': fields.String(required=True, description='Destination IP address'),
+    'action': fields.String(required=True, description='Action to take', enum=['ALLOW', 'DENY'])
 })
 
 create_rule_model = ns_rule.model('Rule', {
     'name': fields.String(required=True, description='The rule name'),
-    'policy_id': fields.Integer(required=True, description='The policy ID')
+    'policy_id': fields.Integer(required=True, description='The policy ID'),
+    'source_ip': fields.String(required=True, description='Source IP address'),
+    'destination_ip': fields.String(required=True, description='Destination IP address'),
+    'action': fields.String(required=True, description='Action to take', enum=['ALLOW', 'DENY'])
 })
 
 
