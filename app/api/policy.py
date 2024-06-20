@@ -7,7 +7,11 @@ from app.app import db
 from app.schemas.policy import PolicySchema
 from marshmallow import ValidationError
 from app.core.policy_service import create_policy
+from app.config import Config
+import logging
 
+Config.setup_logging()
+logger = logging.getLogger(__name__)
 ns_policy = Namespace('policy', description='Policy operations')
 
 policy_model = ns_policy.model('Policy', {
@@ -43,12 +47,15 @@ class PolicyList(Resource):
         res, error = create_policy(data, policy_schema)
         if error:
             return res, 400
+        logger.info(f"Create policy on a firewall {data['firewall_id']}")
         return policy_schema.dump(res), 201
 
 
     @ns_policy.marshal_list_with(policy_model, envelope='policies')
     @login_required
     def get(self):
+        logger.info(f"Get policies")
+
         policies = PolicyModel.query.all()
         return policies_schema.dump(policies)
 
@@ -61,6 +68,8 @@ class PolicyResource(Resource):
         policy = PolicyModel.query.get(id)
         if not policy:
             return {"message": "Policy not found"}, 404
+        logger.info(f"Deleting policy with id {id}")
+
         db.session.delete(policy)
         db.session.commit()
         return {"message": "Policy deleted"}
@@ -71,4 +80,5 @@ class PolicyResource(Resource):
         policy = PolicyModel.query.get(id)
         if not policy:
             return {"message": "Policy not found"}, 404
+        logger.info(f"Getting policy with id {id}")
         return policy_schema.dump(policy), 200

@@ -7,7 +7,11 @@ from app.app import db
 from app.schemas.rule import RuleSchema
 from marshmallow import ValidationError
 from app.core.rule_service import create_rule
+from app.config import Config
+import logging
 
+Config.setup_logging()
+logger = logging.getLogger(__name__)
 ns_rule = Namespace('rule', description='Rule operations')
 
 rule_model = ns_rule.model('Rule', {
@@ -44,12 +48,14 @@ class RuleList(Resource):
         res, error = create_rule(data, rule_schema)
         if error:
             return res, 400
+        logger.info(f"Creating rule on policy {data['policy_id']}")
         return rule_schema.dump(res), 201
 
 
     @ns_rule.marshal_list_with(rule_model, envelope='rules')
     @login_required
     def get(self):
+        logger.info(f"getting rules")
         rules = RuleModel.query.all()
         return rules_schema.dump(rules)
 
@@ -62,6 +68,7 @@ class RuleResource(Resource):
         rule = RuleModel.query.get(id)
         if not rule:
             return {"message": "Rule not found"}, 404
+        logger.info(f"Deleting rule with id {id}")
         db.session.delete(rule)
         db.session.commit()
         return {"message": "Rule deleted"}
@@ -72,4 +79,5 @@ class RuleResource(Resource):
         rule = RuleModel.query.get(id)
         if not rule:
             return {"message": "Rule not found"}, 404
+        logger.info(f"Getting Rule with id {id}")
         return rule_schema.dump(rule), 200
