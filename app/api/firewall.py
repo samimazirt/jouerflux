@@ -4,6 +4,8 @@ from flask_login import login_required, current_user
 from functools import wraps
 from app.app import db
 from app.models.firewall import FirewallModel
+from app.schemas.firewall import FirewallSchema
+from marshmallow import ValidationError
 
 ns_fw = Namespace('firewalls', description='Firewall related operations')
 
@@ -26,6 +28,9 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrap
 
+firewall_schema = FirewallSchema()
+firewalls_schema = FirewallSchema(many=True)
+
 @ns_fw.route('')
 class FirewallList(Resource):
     @ns_fw.doc('list_firewalls')
@@ -34,7 +39,7 @@ class FirewallList(Resource):
     def get(self):
         """List all firewalls"""
         firewalls = FirewallModel.query.all()
-        return firewalls
+        return firewalls_schema.dump(firewalls)
 
     @ns_fw.doc('create_firewall')
     @ns_fw.expect(create_firewall_model)
@@ -43,10 +48,15 @@ class FirewallList(Resource):
     def post(self):
         """Create a new firewall"""
         data = request.json
-        new_firewall = FirewallModel(name=data['name'])
+        try:
+            validated_data = firewall_schema.load(data)
+        except ValidationError as err:
+            return {"message": "Validation error", "errors": err.messages}, 400
+
+        new_firewall = FirewallModel(name=validated_data['name'])
         db.session.add(new_firewall)
         db.session.commit()
-        return new_firewall, 201
+        return firewall_schema.dump(new_firewall), 201
 
 @ns_fw.route('/<int:id>')
 @ns_fw.response(404, 'Firewall not found')
@@ -69,5 +79,7 @@ class FirewallResource(Resource):
     def get(self, id):
         """Retrieve a firewall given its identifier"""
         firewall = FirewallModel.query.get(id)
-        return firewall
+        if not firewall:
+            return {"message": "Firewall not found"}, 404
+        return firewall_schema.dump(firewall), 200
 
