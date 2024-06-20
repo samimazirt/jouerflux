@@ -17,3 +17,10 @@ then
 then 
 
 'flask run' and open localhost:5000
+
+#TODO
+
+check if firewalls/policies/rules already exists before creating
+unit tests
+test endpoint/traffic simulation ??
+add firewalls type (forti/checkpoint/palo)
