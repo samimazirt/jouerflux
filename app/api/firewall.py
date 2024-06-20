@@ -7,10 +7,14 @@ from app.models.firewall import FirewallModel
 from app.schemas.firewall import FirewallSchema
 from marshmallow import ValidationError
 from app.core.firewall_service import create_firewall
+from app.config import Config
+import logging
+
+Config.setup_logging()
+logger = logging.getLogger(__name__)
 
 ns_fw = Namespace('firewalls', description='Firewall related operations')
 
-# Define the model for API documentation
 firewall_model = ns_fw.model('Firewall', {
     'id': fields.Integer(readOnly=True, description='unique identifier of a firewall'),
     'name': fields.String(required=True, description='Firewall name')
@@ -38,7 +42,7 @@ class FirewallList(Resource):
     @ns_fw.marshal_list_with(firewall_model)
     @login_required
     def get(self):
-        """List all firewalls"""
+        logger.info(f"Get all frirewalls")
         firewalls = FirewallModel.query.all()
         return firewalls_schema.dump(firewalls)
 
@@ -47,7 +51,7 @@ class FirewallList(Resource):
     @ns_fw.marshal_with(firewall_model, code=201)
     @admin_required
     def post(self):
-        """Create a new firewall"""
+        logger.info(f"Create a firewall")
         data = request.json
         try:
             validated_data = firewall_schema.load(data)
@@ -66,7 +70,7 @@ class FirewallResource(Resource):
     @ns_fw.response(204, 'Firewall successfully deleted')
     @admin_required
     def delete(self, id):
-        """Delete a firewall given its identifier"""
+        logger.info(f"Delete firewall")
         firewall = FirewallModel.query.get(id)
         if not firewall:
             return {"message": "Firewall not found"}, 404
@@ -78,7 +82,7 @@ class FirewallResource(Resource):
     @ns_fw.marshal_list_with(firewall_model)
     @login_required
     def get(self, id):
-        """Retrieve a firewall given its identifier"""
+        logger.info(f"Get firewall by id")
         firewall = FirewallModel.query.get(id)
         if not firewall:
             return {"message": "Firewall not found"}, 404

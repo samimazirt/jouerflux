@@ -3,11 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
 from flask_restx import Api
-from app.config import config_by_name
+from app.config import config_by_name, Config
+import logging
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 ma = Marshmallow()
+
 
 def create_app(config_name='local'):
     app = Flask(__name__)
@@ -16,6 +18,10 @@ def create_app(config_name='local'):
     db.init_app(app)
     login_manager.init_app(app)
     ma.init_app(app)
+
+    app_config = config_by_name[config_name]
+    app_config.setup_logging()
+    logger = logging.getLogger(__name__)
 
     api = Api(app, version='1.0', title='JouerFlux API', description='A simple API')
 

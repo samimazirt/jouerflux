@@ -11,3 +11,4 @@ marshmallow==3.21.3
 marshmallow-sqlalchemy==1.0.0
 setuptools
 psycopg2
+logging
