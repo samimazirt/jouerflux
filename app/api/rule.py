@@ -6,7 +6,7 @@ from app.models.rule import RuleModel
 from app.app import db
 from app.schemas.rule import RuleSchema
 from marshmallow import ValidationError
-from app.core.rule_service import create_rule
+from app.core.rule_service import create_rule, update_rule
 from app.config import Config
 import logging
 
@@ -30,6 +30,8 @@ create_rule_model = ns_rule.model('Rule', {
     'destination_ip': fields.String(required=True, description='Destination IP address'),
     'action': fields.String(required=True, description='Action to take', enum=['ALLOW', 'DENY'])
 })
+
+update_rule_model = ns_rule.clone('UpdateRule', create_rule_model)
 
 
 def admin_required(f):
@@ -87,3 +89,13 @@ class RuleResource(Resource):
             return {"message": "Rule not found"}, 404
         logger.info(f"Getting Rule with id {id}")
         return rule_schema.dump(rule), 200
+    
+    @ns_rule.expect(update_rule_model, validate=True)
+    @ns_rule.response(200, 'Policy updated')
+    @admin_required
+    def put(self, id):
+        data = request.json
+        updated_rule, errors = update_rule(id, data, rule_schema)
+        if errors:
+            return errors, 400
+        return rule_schema.dump(updated_rule), 200

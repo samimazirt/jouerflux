@@ -26,3 +26,29 @@ def create_rule(data, rule_schema):
     db.session.add(new_rule)
     db.session.commit()
     return new_rule, None
+
+
+def update_rule(rule_id, data, rule_schema):
+    logger.info("updating the rule")
+    try:
+        validated_data = rule_schema.load(data)
+    except ValidationError as err:
+        logger.error("invalid input/schema")
+        return {"message": "Validation error", "errors": err.messages}
+
+    rule = RuleModel.query.get(rule_id)
+    if not rule:
+        logger.error("rule not found")
+        return {"message": "rule not found"}, 404
+
+    if 'policy_id' in validated_data:
+        policy = PolicyModel.query.get(validated_data['policy_id'])
+        if not policy:
+            logger.error("policy not found")
+            return {"message": "policy not found"}, 404
+
+    for key, value in validated_data.items():
+        setattr(rule, key, value)
+
+    db.session.commit()
+    return rule, None

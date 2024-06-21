@@ -14,3 +14,23 @@ def create_firewall(validated_data):
     db.session.add(new_firewall)
     db.session.commit()
     return new_firewall, None
+
+
+def update_firewall(firewall_id, data, firewall_schema):
+    logger.info("updating the firewall")
+    try:
+        validated_data = firewall_schema.load(data)
+    except ValidationError as err:
+        logger.error("invalid input/schema")
+        return {"message": "Validation error", "errors": err.messages}
+
+    firewall = FirewallModel.query.get(firewall_id)
+    if not firewall:
+        logger.error("firewall not found")
+        return {"message": "firewall not found"}, 404
+
+    for key, value in validated_data.items():
+        setattr(firewall, key, value)
+
+    db.session.commit()
+    return firewall, None
