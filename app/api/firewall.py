@@ -6,7 +6,7 @@ from app.app import db
 from app.models.firewall import FirewallModel
 from app.schemas.firewall import FirewallSchema
 from marshmallow import ValidationError
-from app.core.firewall_service import create_firewall, update_firewall
+from app.core.firewall_service import create_firewall, update_firewall, delete_firewall
 from app.config import Config
 import logging
 
@@ -74,12 +74,10 @@ class FirewallResource(Resource):
     @admin_required
     def delete(self, id):
         logger.info(f"Delete firewall")
-        firewall = FirewallModel.query.get(id)
-        if not firewall:
-            return {"message": "Firewall not found"}, 404
-        db.session.delete(firewall)
-        db.session.commit()
-        return '', 204
+        res, errors = delete_firewall(id)
+        if errors:
+            return errors, 400
+        return res, 204
 
     @ns_fw.doc('get_firewall')
     @ns_fw.marshal_list_with(firewall_model)

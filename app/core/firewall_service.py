@@ -1,4 +1,5 @@
 from app.models.firewall import FirewallModel
+from app.models.policy import PolicyModel
 from app.app import db
 from marshmallow import ValidationError
 from app.config import Config
@@ -34,3 +35,24 @@ def update_firewall(firewall_id, data, firewall_schema):
 
     db.session.commit()
     return firewall, None
+
+def delete_firewall(firewall_id):
+    logger.info("deleting firewall")
+    policies = PolicyModel.query.filter_by(firewall_id=firewall_id).all()
+
+    if not policies:
+        logger.info(f"no policies found for firewall ID {firewall_id}")
+
+    for policy in policies:
+        logger.info(f"deleting policy with ID {policy.id} for firewall id {firewall_id}")
+        db.session.delete(policy)
+    
+    firewall = FirewallModel.query.get(firewall_id)
+    if firewall:
+        logger.info(f"deleting firewall with ID {firewall_id}")
+        db.session.delete(firewall)
+        db.session.commit()
+        return {"message": f"Firewall {firewall_id} and policies deleted"}, None
+    else:
+        logger.warning(f"Firewall with ID {firewall_id} not found")
+        return {"message": f"Firewall {firewall_id} not found"}, 404
