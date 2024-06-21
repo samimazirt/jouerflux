@@ -6,7 +6,7 @@ from app.models.policy import PolicyModel
 from app.app import db
 from app.schemas.policy import PolicySchema
 from marshmallow import ValidationError
-from app.core.policy_service import create_policy, update_policy
+from app.core.policy_service import create_policy, update_policy, delete_policy
 from app.config import Config
 import logging
 
@@ -67,14 +67,11 @@ class PolicyResource(Resource):
     @ns_policy.response(200, 'Policy deleted')
     @admin_required
     def delete(self, id):
-        policy = PolicyModel.query.get(id)
-        if not policy:
-            return {"message": "Policy not found"}, 404
-        logger.info(f"Deleting policy with id {id}")
-
-        db.session.delete(policy)
-        db.session.commit()
-        return {"message": "Policy deleted"}
+        logger.info(f"Delete policy")
+        res, errors = delete_policy(id)
+        if errors:
+            return errors, 400
+        return res, 204
 
     @ns_policy.marshal_list_with(policy_model)
     @login_required
