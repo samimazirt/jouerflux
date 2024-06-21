@@ -6,7 +6,7 @@ from app.app import db
 from app.models.firewall import FirewallModel
 from app.schemas.firewall import FirewallSchema
 from marshmallow import ValidationError
-from app.core.firewall_service import create_firewall
+from app.core.firewall_service import create_firewall, update_firewall
 from app.config import Config
 import logging
 
@@ -23,6 +23,9 @@ firewall_model = ns_fw.model('Firewall', {
 create_firewall_model = ns_fw.model('Firewall', {
     'name': fields.String(required=True, description='Firewall name')
 })
+
+update_firewall_model = ns_fw.clone('UpdateFirewall', create_firewall_model)
+
 
 def admin_required(f):
     @wraps(f)
@@ -88,3 +91,12 @@ class FirewallResource(Resource):
             return {"message": "Firewall not found"}, 404
         return firewall_schema.dump(firewall), 200
 
+    @ns_fw.expect(update_firewall_model, validate=True)
+    @ns_fw.response(200, 'Policy updated')
+    @admin_required
+    def put(self, id):
+        data = request.json
+        updated_firewall, errors = update_firewall(id, data, firewall_schema)
+        if errors:
+            return errors, 400
+        return firewall_schema.dump(updated_firewall), 200

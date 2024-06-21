@@ -92,5 +92,5 @@ class PolicyResource(Resource):
         data = request.json
         updated_policy, errors = update_policy(id, data, policy_schema)
         if errors:
-            return errors, 400 if isinstance(errors, dict) else errors, errors[1]
+            return errors, 400
         return policy_schema.dump(updated_policy), 200

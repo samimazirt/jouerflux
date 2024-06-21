@@ -33,18 +33,18 @@ def update_policy(policy_id, data, policy_schema):
         validated_data = policy_schema.load(data)
     except ValidationError as err:
         logger.error("invalid input/schema")
-        return None, {"message": "Validation error", "errors": err.messages}
+        return {"message": "Validation error", "errors": err.messages}
 
     policy = PolicyModel.query.get(policy_id)
     if not policy:
         logger.error("policy not found")
-        return None, {"message": "Policy not found"}, 404
+        return {"message": "Policy not found"}, 404
 
     if 'firewall_id' in validated_data:
         firewall = FirewallModel.query.get(validated_data['firewall_id'])
         if not firewall:
             logger.error("policy not found")
-            return None, {"message": "Firewall not found"}, 404
+            return {"message": "Firewall not found"}, 404
 
     for key, value in validated_data.items():
         setattr(policy, key, value)
