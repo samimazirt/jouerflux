@@ -18,6 +18,11 @@ then
 
 'flask run' and open localhost:5000
 
+OR Docker:
+
+docker build -t jouerflux .
+docker run -p 5000:5000 jouerflux
+
 #TODO
 
 check if firewalls/policies/rules already exists before creating
