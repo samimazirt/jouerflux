@@ -22,5 +22,6 @@ then
 
 check if firewalls/policies/rules already exists before creating
 unit tests
-test endpoint/traffic simulation ??
-add firewalls type (forti/checkpoint/palo)
+test traffic simulation ??
+add firewalls type (forti/checkpoint/palo) ?
+get closer to real firewalls...
