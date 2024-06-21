@@ -38,16 +38,21 @@ def update_firewall(firewall_id, data, firewall_schema):
 
 def delete_firewall(firewall_id):
     logger.info("deleting firewall")
-    policies = PolicyModel.query.filter_by(firewall_id=firewall_id).all()
-
-    if not policies:
-        logger.info(f"no policies found for firewall ID {firewall_id}")
-
-    for policy in policies:
-        logger.info(f"deleting policy with ID {policy.id} for firewall id {firewall_id}")
-        db.session.delete(policy)
+    
     
     firewall = FirewallModel.query.get(firewall_id)
+
+    if not firewall.policies:
+        logger.info(f"no policies found for firewall ID {firewall_id}")
+
+    for policy in firewall.policies:
+        for rule in policy.rules:
+            logger.info(f"deleting rule with ID {rule.id} for policy id {policy.id}")
+            db.session.delete(rule)
+        logger.info(f"deleting policy with ID {policy.id} for firewall id {firewall_id}")
+        db.session.delete(policy)
+
+
     if firewall:
         logger.info(f"deleting firewall with ID {firewall_id}")
         db.session.delete(firewall)

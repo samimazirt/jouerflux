@@ -5,7 +5,7 @@ class FirewallModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250))
-    #policies = db.relationship('PolicyModel', backref='firewall', lazy=True)
+    policies = db.relationship('PolicyModel', backref='firewall', lazy=True)
 
     def __init__(self, name):
         self.name = name

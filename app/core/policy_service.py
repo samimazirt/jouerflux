@@ -55,16 +55,17 @@ def update_policy(policy_id, data, policy_schema):
 
 def delete_policy(policy_id):
     logger.info("deleting policy")
-    rules = RuleModel.query.filter_by(policy_id=policy_id).all()
 
-    if not rules:
-        logger.info(f"no rules found for policy ID {policy_id}")
+    policy = PolicyModel.query.get(policy_id)
 
-    for rule in rules:
+    if not policy.rules:
+        logger.info("no rules in the policy")
+
+    for rule in policy.rules:
         logger.info(f"deleting rule with ID {rule.id} for policy id {policy_id}")
         db.session.delete(rule)
     
-    policy = PolicyModel.query.get(policy_id)
+    
     if policy:
         logger.info(f"deleting policy with ID {policy_id}")
         db.session.delete(policy)
