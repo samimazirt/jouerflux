@@ -6,7 +6,7 @@ from app.models.policy import PolicyModel
 from app.app import db
 from app.schemas.policy import PolicySchema
 from marshmallow import ValidationError
-from app.core.policy_service import create_policy
+from app.core.policy_service import create_policy, update_policy
 from app.config import Config
 import logging
 
@@ -24,6 +24,8 @@ create_policy_model = ns_policy.model('Policy', {
     'name': fields.String(required=True, description='The policy name'),
     'firewall_id': fields.Integer(required=True, description='The firewall ID')
 })
+
+update_policy_model = ns_policy.clone('UpdatePolicy', create_policy_model)
 
 def admin_required(f):
     @wraps(f)
@@ -82,3 +84,13 @@ class PolicyResource(Resource):
             return {"message": "Policy not found"}, 404
         logger.info(f"Getting policy with id {id}")
         return policy_schema.dump(policy), 200
+    
+    @ns_policy.expect(update_policy_model, validate=True)
+    @ns_policy.response(200, 'Policy updated')
+    @admin_required
+    def put(self, id):
+        data = request.json
+        updated_policy, errors = update_policy(id, data, policy_schema)
+        if errors:
+            return errors, 400 if isinstance(errors, dict) else errors, errors[1]
+        return policy_schema.dump(updated_policy), 200
